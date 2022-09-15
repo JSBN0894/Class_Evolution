@@ -1,3 +1,4 @@
+from operator import index
 import numpy as np
 
 class Ind:
@@ -23,12 +24,19 @@ class Ind:
     def __init__(self,SearchSpace,CrossProbability,MutateProbability):
         self.CrossProbability = CrossProbability
         self.MutateProbability = MutateProbability
-        self.Crhomosome = np.array([Vspace[0]+(Vspace[1]-Vspace[0])
+        self.Chromosome = np.array([Vspace[0]+(Vspace[1]-Vspace[0])
                                     *np.random.rand() for Vspace in SearchSpace])
+        self.SearchSpace = SearchSpace
         self.score = 0
         self.adt = 0
         self.sum_score = 0
 
+    def UniformMutate(self):
+        alpha = np.random.rand()
+        if alpha<self.MutateProbability:
+            i = np.random.randint(len(self.SearchSpace))
+            self.Chromosome[i] = self.SearchSpace[i][0] + (self.SearchSpace[i][1] - self.SearchSpace[i][0])*np.random.rand()
+    
     
 
 class population:
@@ -58,5 +66,4 @@ class Evolution:
             if Finally(Elite) == True:
                 break
     """
-    
     
