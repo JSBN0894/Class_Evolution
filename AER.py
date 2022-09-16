@@ -106,7 +106,15 @@ class population:
             ind.score = ind.adt/self.AdaptationSum #Actualizamos el score de los individuos
             scoreSum+=ind.score
             ind.scoreSum += scoreSum # Actualizamos la posición para la ruleta
-  
+
+    def selection(self):
+        "función que selecciona los cruces por el metodo de la ruleta"
+        list_select = []
+        for i in range(self.N):
+            p = np.random.rand()
+            list_select.append(filter(lambda ind:ind.scoreSum>=p , self.Population).__next__())
+
+        self.Population = list_select
 
 
 class Evolution:
