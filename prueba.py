@@ -1,25 +1,12 @@
-import atexit
 import AER
 
-"""
-Definimos la función de adaptación, la cual tiene como parametro un individuo
-y modifica su valor de adaptación.
-"""
+def restiction(ind):
+    for gen in ind.Chromosome:
+        if gen>0.5:
+            return False
+    return True
+            
+searchSpace = [(0,1) for i in range(10)]
+ind = AER.Ind(searchSpace,0.6,0.1,restiction)
 
-def adtFunction(ind):
-    y = lambda x:4-x**2
-    ind.adt = y(ind.Chromosome[0])
-
-pop = AER.population(3,[(-10,10)],0.6,0.1,adtFunction)
-
-print("---"*30)
-for i in pop.Population:
-    print("score = {}, sumScore = {}".format(i.score,i.scoreSum))
-print("---"*30)
-print("\n")
-print("---"*30)
-
-pop.EvaluePopulation()
-for i in pop.Population:
-    print("score = {}, sumScore = {}".format(i.score,i.scoreSum))
-print("---"*30)
+print(ind.Chromosome)

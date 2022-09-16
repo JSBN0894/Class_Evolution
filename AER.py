@@ -1,5 +1,3 @@
-from ipaddress import summarize_address_range
-from math import fabs
 import numpy as np
 
 class Ind:
@@ -20,25 +18,40 @@ class Ind:
     MutateProbability --> Numero flotante entre 0 y 1 que representa 
                           la probabilidad de mutación del individuo
 
+    Restrictions --> función que define las restricciones que debe cumplir el individuo, debe
+                    retornar verdadero si el individuo cumple con las caracteristicas minimas para
+                    ser una posible solución
 
     """
-    def __init__(self,SearchSpace,CrossProbability,MutateProbability):
+    def __init__(self,SearchSpace,Restrictions = lambda x: True):
 
         self.SearchSpace = SearchSpace
-        self.CrossProbability = CrossProbability
-        self.MutateProbability = MutateProbability
-        self.Chromosome = np.array([Vspace[0]+(Vspace[1]-Vspace[0])
-                                    *np.random.rand() for Vspace in self.SearchSpace])
+        self.Restrictions = Restrictions
+        self.MakeChromosome()
         self.score = 0
         self.adt = 0
         self.scoreSum= 0
 
+    def MakeChromosome(self):
+        """
+        actualiza el valor del cromosoma teniendo en cuenta la función de restricción
+        """
+        cont = 0
+        while True:
+            cont+=1
+            self.Chromosome = np.array([Vspace[0]+(Vspace[1]-Vspace[0])
+                                        *np.random.rand() for Vspace in self.SearchSpace])
+            if self.Restrictions(self):
+                break
+            assert cont<1.5E6, "se iteraron {} veces, y no se encontró un individuo que cumpliera las restricciones".format(cont)
+
+
     def UniformMutate(self):
-        alpha = np.random.rand()
-        if alpha<self.MutateProbability:
-            i = np.random.randint(len(self.SearchSpace))
-            self.Chromosome[i] = self.SearchSpace[i][0] + (self.SearchSpace[i][1] - self.SearchSpace[i][0])*np.random.rand()
-    
+        i = np.random.randint(len(self.SearchSpace))
+        self.Chromosome[i] = self.SearchSpace[i][0] + (self.SearchSpace[i][1] - self.SearchSpace[i][0])*np.random.rand()
+        if self.Restrictions()!=True:
+            self.MakeChromosome()
+
     def SbxCrossover(self,ind):
         assert len(self.Chromosome) == len(ind.Chromosome),"Los individuos no son de la misma especie"
         """
@@ -79,37 +92,10 @@ class Ind:
 
         self.Chromosome = chromosome_1
         ind.Chromosome = chromosome_2
-    
-class population:
-    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdaptationFunction):
-        self.N = N
-        self.CrossProbability = CrossProbability
-        self.SearchSpace = SearchSpace
-        self.MutateProbability = MutateProbability
-        self.Population = [Ind(self.SearchSpace,self.CrossProbability
-                            ,self.MutateProbability) for i in range(self.N)]
-
-        self.AdatptationFunction = AdaptationFunction
-        self.AdaptationSum = 0
+        if self.Restrictions(self)!= True:
+            self.MakeChromosome()
+        if self.Restrictions(ind)!=True:
+            ind.MakeChromosome()
         
-    def EvaluePopulation(self):
-        """
-        Esta función se encarga de actualizar los atributos [score,adt,sum_score]
-        en cada individuo de la población
-        """
-        for ind in self.Population: 
-            self.AdatptationFunction(ind) #Actualizamos la adaptación de cada individuo
-            self.AdaptationSum += ind.adt #Actualizamos la suma de adaptación en la población
 
-        scoreSum = 0
-        for ind in self.Population:
-            ind.score = ind.adt/self.AdaptationSum #Actualizamos el score de los individuos
-            scoreSum+=ind.score
-            ind.scoreSum += scoreSum # Actualizamos la posición para la ruleta
-  
-
-
-class Evolution:
-    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdtFunction,FinallyFunction = None):
-        pass    
-    
+            
