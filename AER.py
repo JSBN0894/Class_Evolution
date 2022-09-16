@@ -1,3 +1,5 @@
+from ipaddress import summarize_address_range
+from math import fabs
 import numpy as np
 
 class Ind:
@@ -29,7 +31,7 @@ class Ind:
                                     *np.random.rand() for Vspace in self.SearchSpace])
         self.score = 0
         self.adt = 0
-        self.sum_score = 0
+        self.scoreSum= 0
 
     def UniformMutate(self):
         alpha = np.random.rand()
@@ -79,7 +81,7 @@ class Ind:
         ind.Chromosome = chromosome_2
     
 class population:
-    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdtFunction):
+    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdaptationFunction):
         self.N = N
         self.CrossProbability = CrossProbability
         self.SearchSpace = SearchSpace
@@ -87,22 +89,24 @@ class population:
         self.Population = [Ind(self.SearchSpace,self.CrossProbability
                             ,self.MutateProbability) for i in range(self.N)]
 
-        self.adtFun = AdtFunction
+        self.AdatptationFunction = AdaptationFunction
+        self.AdaptationSum = 0
         
     def EvaluePopulation(self):
         """
         Esta función se encarga de actualizar los atributos [score,adt,sum_score]
         en cada individuo de la población
         """
+        for ind in self.Population: 
+            self.AdatptationFunction(ind) #Actualizamos la adaptación de cada individuo
+            self.AdaptationSum += ind.adt #Actualizamos la suma de adaptación en la población
+
+        scoreSum = 0
         for ind in self.Population:
-            self.adtFun(ind)
-        
-
-    
-
-
-
-
+            ind.score = ind.adt/self.AdaptationSum #Actualizamos el score de los individuos
+            scoreSum+=ind.score
+            ind.scoreSum += scoreSum # Actualizamos la posición para la ruleta
+  
 
 
 class Evolution:
