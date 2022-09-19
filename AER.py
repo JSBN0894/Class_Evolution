@@ -22,11 +22,9 @@ class Ind:
 
 
     """
-    def __init__(self,SearchSpace,CrossProbability,MutateProbability):
+    def __init__(self,SearchSpace):
 
         self.SearchSpace = SearchSpace
-        self.CrossProbability = CrossProbability
-        self.MutateProbability = MutateProbability
         self.Chromosome = np.array([Vspace[0]+(Vspace[1]-Vspace[0])
                                     *np.random.rand() for Vspace in self.SearchSpace])
         self.score = 0
@@ -85,9 +83,9 @@ class population:
         self.CrossProbability = CrossProbability
         self.SearchSpace = SearchSpace
         self.MutateProbability = MutateProbability
-        self.Population = [Ind(self.SearchSpace,self.CrossProbability
-                            ,self.MutateProbability) for i in range(self.N)]
-
+        self.Population = [Ind(self.SearchSpace) for i in range(self.N)]
+        
+        self.best = Ind(self.SearchSpace)
         self.AdatptationFunction = AdaptationFunction
         self.AdaptationSum = 0
         
@@ -98,6 +96,7 @@ class population:
         """
         for ind in self.Population: 
             self.AdatptationFunction(ind) #Actualizamos la adaptación de cada individuo
+            assert ind.adt>0, "Error adaptación negativa"
             self.AdaptationSum += ind.adt #Actualizamos la suma de adaptación en la población
 
         scoreSum = 0
@@ -105,6 +104,10 @@ class population:
             ind.score = ind.adt/self.AdaptationSum #Actualizamos el score de los individuos
             scoreSum+=ind.score
             ind.scoreSum += scoreSum # Actualizamos la posición para la ruleta
+            if ind.adt > self.best.adt:
+                self.best.adt = ind.adt
+                self.best.Chromosome = ind.Chromosome
+                print("Cromosoma: {}, Adaptación: {}".format(self.best.Chromosome,self.best.adt))
 
     def Selection(self):
         "función que selecciona los cruces por el metodo de la ruleta"
@@ -112,9 +115,7 @@ class population:
         for i in range(self.N):
             p = np.random.rand()
             list_select.append(filter(lambda ind:ind.scoreSum>=p , self.Population).__next__())
-
         self.Population = list_select
-
     
     def CrossingPopulation(self):
         if len(self.Population)%2 !=0:
@@ -130,6 +131,29 @@ class population:
         for ind in self.Population:
             if p<self.MutateProbability:
                 ind.UniformMutate()
+
+    def Evolution(self,MaxIter):
+        for i in range(MaxIter):
+            self.EvaluePopulation()
+            self.Selection()
+            self.CrossingPopulation()
+            self.MutatePopulation()
+
+            
+        
+        
+
+        
+
+    
+
+
+
+
+    
+
+
+
 
     
     
