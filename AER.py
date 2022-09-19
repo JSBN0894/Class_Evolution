@@ -35,9 +35,8 @@ class Ind:
 
     def UniformMutate(self):
         alpha = np.random.rand()
-        if alpha<self.MutateProbability:
-            i = np.random.randint(len(self.SearchSpace))
-            self.Chromosome[i] = self.SearchSpace[i][0] + (self.SearchSpace[i][1] - self.SearchSpace[i][0])*np.random.rand()
+        i = np.random.randint(len(self.SearchSpace))
+        self.Chromosome[i] = self.SearchSpace[i][0] + (self.SearchSpace[i][1] - self.SearchSpace[i][0])*np.random.rand()
     
     def SbxCrossover(self,ind):
         assert len(self.Chromosome) == len(ind.Chromosome),"Los individuos no son de la misma especie"
@@ -107,7 +106,7 @@ class population:
             scoreSum+=ind.score
             ind.scoreSum += scoreSum # Actualizamos la posición para la ruleta
 
-    def selection(self):
+    def Selection(self):
         "función que selecciona los cruces por el metodo de la ruleta"
         list_select = []
         for i in range(self.N):
@@ -116,8 +115,23 @@ class population:
 
         self.Population = list_select
 
-
-class Evolution:
-    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdtFunction,FinallyFunction = None):
-        pass    
     
+    def CrossingPopulation(self):
+        if len(self.Population)%2 !=0:
+            self.Population = self.Population[:-1]
+            self.N-=1
+        p = np.random.rand()
+        for i in range(0,int(self.N/2),2):
+            if p< self.CrossProbability:
+                Ind.SbxCrossover(self.Population[i],self.Population[i+1])
+    
+    def MutatePopulation(self):
+        p = np.random.rand()
+        for ind in self.Population:
+            if p<self.MutateProbability:
+                ind.UniformMutate()
+
+    
+    
+    
+

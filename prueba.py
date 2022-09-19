@@ -12,7 +12,7 @@ def adtFunction(ind):
     if ind.adt<0:
         ind.adt = 1E-3
 
-pop = AER.population(10,[(-10,10)],0.6,0.1,adtFunction)
+pop = AER.population(10,[(-10,10) for i in range(5)],0.7,0.1,adtFunction)
 
 print("---"*30)
 for i in pop.Population:
@@ -32,8 +32,26 @@ print("---"*30)
 for i in pop.Population:
     print("adaptation = {}".format(i.adt))
 print("---"*30)
-pop.selection()
+pop.Selection()
 for i in pop.Population:
     print("adaptation = {}".format(i.adt))
 print("---"*30)
+print("Probando la función de cruce de población")
+print("---"*30)
+for i in pop.Population:
+    print("chromosome = {}".format(i.Chromosome))
+pop.CrossingPopulation()
+print("---"*30)
+for i in pop.Population:
+    print("chromosome = {}".format(i.Chromosome))
 
+print("---"*30)
+print("Probando mutación")
+print("---"*30)
+for i in pop.Population:
+    print("chromosome = {}".format(i.Chromosome))
+
+pop.MutatePopulation()
+print("---"*30)
+for i in pop.Population:
+    print("chromosome = {}".format(i.Chromosome))
