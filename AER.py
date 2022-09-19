@@ -20,22 +20,19 @@ class Ind:
 
 
     """
-    def __init__(self,SearchSpace,CrossProbability,MutateProbability):
+    def __init__(self,SearchSpace):
 
         self.SearchSpace = SearchSpace
-        self.CrossProbability = CrossProbability
-        self.MutateProbability = MutateProbability
         self.Chromosome = np.array([Vspace[0]+(Vspace[1]-Vspace[0])
                                     *np.random.rand() for Vspace in self.SearchSpace])
         self.score = 0
         self.adt = 0
-        self.sum_score = 0
+        self.scoreSum= 0
 
     def UniformMutate(self):
         alpha = np.random.rand()
-        if alpha<self.MutateProbability:
-            i = np.random.randint(len(self.SearchSpace))
-            self.Chromosome[i] = self.SearchSpace[i][0] + (self.SearchSpace[i][1] - self.SearchSpace[i][0])*np.random.rand()
+        i = np.random.randint(len(self.SearchSpace))
+        self.Chromosome[i] = self.SearchSpace[i][0] + (self.SearchSpace[i][1] - self.SearchSpace[i][0])*np.random.rand()
     
     def SbxCrossover(self,ind):
         assert len(self.Chromosome) == len(ind.Chromosome),"Los individuos no son de la misma especie"
@@ -77,54 +74,86 @@ class Ind:
 
         self.Chromosome = chromosome_1
         ind.Chromosome = chromosome_2
-      
+    
+class population:
+    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdaptationFunction):
+        self.N = N
+        self.CrossProbability = CrossProbability
+        self.SearchSpace = SearchSpace
+        self.MutateProbability = MutateProbability
+        self.Population = [Ind(self.SearchSpace) for i in range(self.N)]
+        
+        self.best = Ind(self.SearchSpace)
+        self.AdatptationFunction = AdaptationFunction
+        self.AdaptationSum = 0
+        
+    def EvaluePopulation(self):
+        """
+        Esta función se encarga de actualizar los atributos [score,adt,sum_score]
+        en cada individuo de la población
+        """
+        for ind in self.Population: 
+            self.AdatptationFunction(ind) #Actualizamos la adaptación de cada individuo
+            assert ind.adt>0, "Error adaptación negativa"
+            self.AdaptationSum += ind.adt #Actualizamos la suma de adaptación en la población
 
+        scoreSum = 0
+        for ind in self.Population:
+            ind.score = ind.adt/self.AdaptationSum #Actualizamos el score de los individuos
+            scoreSum+=ind.score
+            ind.scoreSum += scoreSum # Actualizamos la posición para la ruleta
+            if ind.adt > self.best.adt:
+                self.best.adt = ind.adt
+                self.best.Chromosome = ind.Chromosome
+                print("Cromosoma: {}, Adaptación: {}".format(self.best.Chromosome,self.best.adt))
+
+    def Selection(self):
+        "función que selecciona los cruces por el metodo de la ruleta"
+        list_select = []
+        for i in range(self.N):
+            p = np.random.rand()
+            list_select.append(filter(lambda ind:ind.scoreSum>=p , self.Population).__next__())
+        self.Population = list_select
+    
+    def CrossingPopulation(self):
+        if len(self.Population)%2 !=0:
+            self.Population = self.Population[:-1]
+            self.N-=1
+        p = np.random.rand()
+        for i in range(0,int(self.N/2),2):
+            if p< self.CrossProbability:
+                Ind.SbxCrossover(self.Population[i],self.Population[i+1])
+    
+    def MutatePopulation(self):
+        p = np.random.rand()
+        for ind in self.Population:
+            if p<self.MutateProbability:
+                ind.UniformMutate()
+
+    def Evolution(self,MaxIter):
+        for i in range(MaxIter):
+            self.EvaluePopulation()
+            self.Selection()
+            self.CrossingPopulation()
+            self.MutatePopulation()
+
+            
+        
+        
 
         
 
     
 
-class population:
-    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdtFunction):
-        self.N = N
-        self.CrossProbability = CrossProbability
-        self.SearchSpace = SearchSpace
-        self.MutateProbability = MutateProbability
-        self.Population = [Ind(self.SearchSpace,self.CrossProbability
-                            ,self.MutateProbability) for i in range(self.N)]
+
+
 
     
 
 
 
 
-class Evolution:
-    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdtFunction,FinallyFunction = None):
-        pass    
     
-    """
-        creamos la poblacion
-        evaluamos la poblacion --> funcion de adaptacion a cada individuo y calcula 
-        while True:
-            seleccion
-            cruce 
-            mutación
-            evaluar poblacion --> se escoje el mejor individuo Elite
-            if Finally(Elite) == True:
-                break
-    """
     
-""" p = population(10,[(0,1),(0,1),(0,1)],0.6,0.1,lambda x: True)
-for i in p.Population:
-    print(i.Chromosome)
- """
-ind1 = Ind([(0,1),(0,1)],0.6,0.1)
-ind2 = Ind([(0,1),(0,1)],0.6,0.1)
-
-print("Cromosoma del individuo 1 = ",ind1.Chromosome)
-print("Cromosoma del individuo 2= ",ind2.Chromosome)
-Ind.SbxCrossover(ind1,ind2)
-print("Cromosoma del individuo 1 = ",ind1.Chromosome)
-print("Cromosoma del individuo 2= ",ind2.Chromosome)
-
+    
 
