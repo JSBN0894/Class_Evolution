@@ -18,22 +18,41 @@ class Ind:
     MutateProbability --> Numero flotante entre 0 y 1 que representa 
                           la probabilidad de mutación del individuo
 
+    Restrictions --> función que define las restricciones que debe cumplir el individuo, debe
+                    retornar verdadero si el individuo cumple con las caracteristicas minimas para
+                    ser una posible solución
 
     """
-    def __init__(self,SearchSpace):
+    def __init__(self,SearchSpace,Restrictions):
 
         self.SearchSpace = SearchSpace
-        self.Chromosome = np.array([Vspace[0]+(Vspace[1]-Vspace[0])
-                                    *np.random.rand() for Vspace in self.SearchSpace])
+        self.Restrictions = Restrictions
         self.score = 0
         self.adt = 0
         self.scoreSum= 0
+        self.MakeChromosome()
+      
+
+    def MakeChromosome(self):
+        """
+        actualiza el valor del cromosoma teniendo en cuenta la función de restricción
+        """
+        cont = 0
+        while True:
+            cont+=1
+            self.Chromosome = np.array([Vspace[0]+(Vspace[1]-Vspace[0])
+                                        *np.random.rand() for Vspace in self.SearchSpace])
+            if self.Restrictions(self):
+                break
+            assert cont<1.5E6, "se iteraron {} veces, y no se encontró un individuo que cumpliera las restricciones".format(cont)
+
 
     def UniformMutate(self):
-        alpha = np.random.rand()
         i = np.random.randint(len(self.SearchSpace))
         self.Chromosome[i] = self.SearchSpace[i][0] + (self.SearchSpace[i][1] - self.SearchSpace[i][0])*np.random.rand()
-    
+        if self.Restrictions(self)!=True:
+            self.MakeChromosome()
+
     def SbxCrossover(self,ind):
         assert len(self.Chromosome) == len(ind.Chromosome),"Los individuos no son de la misma especie"
         """
@@ -74,16 +93,22 @@ class Ind:
 
         self.Chromosome = chromosome_1
         ind.Chromosome = chromosome_2
+        if self.Restrictions(self)!=True:
+            self.MakeChromosome()
+        if ind.Restrictions(ind)!=True:
+            ind.MakeChromosome()
+            
     
 class population:
-    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdaptationFunction):
+    def __init__(self,N,SearchSpace,CrossProbability,MutateProbability,AdaptationFunction,Restrictions = lambda x: True):
         self.N = N
         self.CrossProbability = CrossProbability
         self.SearchSpace = SearchSpace
         self.MutateProbability = MutateProbability
-        self.Population = [Ind(self.SearchSpace) for i in range(self.N)]
+        self.Restrictions = Restrictions
+        self.Population = [Ind(self.SearchSpace,self.Restrictions) for i in range(self.N)]
         
-        self.best = Ind(self.SearchSpace)
+        self.best = Ind(self.SearchSpace,self.Restrictions)
         self.AdatptationFunction = AdaptationFunction
         self.AdaptationSum = 0
         

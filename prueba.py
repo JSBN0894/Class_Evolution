@@ -1,10 +1,11 @@
-import atexit
+from operator import truediv
 import AER
 
-"""
-Definimos la función de adaptación, la cual tiene como parametro un individuo
-y modifica su valor de adaptación.
-"""
+def Restrictions(ind):
+    if ind.Chromosome[0] >3 or ind.Chromosome[0]<1:
+        return False
+    else:
+        return True
 
 def adtFunction(ind):
     y = lambda x:4-x**2
@@ -13,6 +14,6 @@ def adtFunction(ind):
     if ind.adt<0:
         ind.adt = 1E-6
   
-pop = AER.population(1000,[(-1000,1000)],0.7,0.4,adtFunction)
+pop = AER.population(1000,[(-10,10)],0.7,0.4,adtFunction,Restrictions)
 
 pop.Evolution(100)
