@@ -119,7 +119,8 @@ class population:
         """
         for ind in self.Population: 
             self.AdatptationFunction(ind) #Actualizamos la adaptación de cada individuo
-            assert ind.adt>0, "Error adaptación negativa"
+            if ind.adt <0:
+                ind.adt = 1E-9
             self.AdaptationSum += ind.adt #Actualizamos la suma de adaptación en la población
 
         scoreSum = 0

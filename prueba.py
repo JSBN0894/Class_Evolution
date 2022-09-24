@@ -1,19 +1,21 @@
-from operator import truediv
 import AER
+import numpy as np
+import matplotlib.pyplot as plt
 
-def Restrictions(ind):
-    if ind.Chromosome[0] >3 or ind.Chromosome[0]<1:
-        return False
-    else:
-        return True
+A = lambda r: 2*np.pi*r**2 + 2*np.pi*r*(1/(np.pi*r**2))
+def adt(ind):
+    r = ind.Chromosome[0]
+    ind.adt = 100/(1*A(r))
 
-def adtFunction(ind):
-    y = lambda x:4-x**2
-    ind.adt = y(ind.Chromosome[0])
-    
-    if ind.adt<0:
-        ind.adt = 1E-6
-  
-pop = AER.population(1000,[(-10,10)],0.7,0.4,adtFunction,Restrictions)
-
+pop = AER.population(100,[(0,0.6)],0.7,0.1,adt)
 pop.Evolution(100)
+
+R = np.linspace(0.01,2,100)
+area = A(R)
+best = pop.best.Chromosome[0]
+
+plt.plot(R,area)
+plt.plot(best,A(best),"*",color = "red")
+plt.show()
+
+
